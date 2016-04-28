@@ -13,17 +13,16 @@ public with sharing class ContactListController {
 		
 		if (!Test.isRunningTest()) {
 			sc.addFields(new List<String> {
-				// Include any Account fields used in Apex but not in VF
+				// Include any Account fields needed in Apex but not in VF
 			});
+			record = (Account) sc.getRecord();
+		}
+		else if (String.isBlank(sc.getId())) {
 			record = (Account) sc.getRecord();
 		}
 		else {
 			// Select fields referenced in this class for unit testing purposes
-			record =
-			    [ SELECT Id, Name, (SELECT Id FROM Contacts ORDER BY Name ASC)
-			      FROM Account
-			      WHERE Id = :sc.getId()
-			    ];
+			record = selectAccount(sc.getId());
 		}
 		contacts = new List<ContactWrapper>();
 		for (Contact contact : record.Contacts) {
@@ -32,17 +31,35 @@ public with sharing class ContactListController {
 		dummyContact = new Contact();
 	}
 	
+	private Account selectAccount(Id id) {
+		return [ SELECT Id, Name, (SELECT Id, Name FROM Contacts ORDER BY Name ASC)
+		         FROM Account
+		         WHERE Id = :id
+		       ];
+	}
+	
 	public PageReference next() {
 		PageReference ref = Page.ContactList;
 		ref.getParameters().put('id', dummyContact.AccountId);
 		ref.setRedirect(true);
+		if (Test.isRunningTest()) {
+			record = selectAccount(dummyContact.AccountId);
+			setContacts();
+		}
 		return ref;
+	}
+
+	private void setContacts() {
+		contacts = new List<ContactWrapper>();
+		for (Contact contact : record.Contacts) {
+			contacts.add(new ContactWrapper(contact));
+		}
 	}
 	
 	public PageReference save() {
 		try {
 			// Finalize field values here...
-			sc.save(); // save the master record
+			update record; // save the master record
 			saveContacts(); // save the detail records
 		}
 		catch (Exception e) {

@@ -1,4 +1,4 @@
-# Sample Apex Project w/ TravisCI and Coveralls integration
+# Sample Apex Project w/ TravisCI and Coveralls
 
 [![deploy to salesforce](https://img.shields.io/badge/salesforce-deploy-blue.svg)](https://githubsfdeploy.herokuapp.com)
 [![Build Status](https://img.shields.io/travis/redteal/sample-apex-library.svg)](https://travis-ci.org/redteal/sample-apex-library)
