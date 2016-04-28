@@ -1,0 +1,82 @@
+<apex:page standardController="Account" extensions="ContactListController" showHeader="true" sidebar="true">
+	<style>
+		.item-odd { background-color: #FFF; }
+		.item-even { background-color: #F8F8F8; }
+		.item-cb-column { width: 30px; text-align: center; }
+		.stacktrace { display: none; }
+		.stacktrace-link { color: #999; font-size: 0.85em; }
+	</style>
+	<script type="text/javascript">
+		var toggleCheckboxes = function (self, styleclass) {
+			var elems = document.getElementsByClassName(styleclass);
+			for (var i = 0, len = elems.length; i < len; i++) {
+				elems[i].checked = self.checked;
+			}
+		};
+		var showStacktrace = function () {
+			document.getElementsByClassName('stacktrace')[0].style.display = 'inline';
+			document.getElementsByClassName('stacktrace-link')[0].style.display = 'none';
+		};
+	</script>
+	<!-- Dummy markup for auto-selecting contact fields in the StandardController -->
+	<apex:outputPanel rendered="false">
+		<apex:repeat value="{!Account.Contacts}" var="c">
+			<apex:outputField value="{!c.Name}"/>
+			<apex:outputField value="{!c.Email}"/>
+			<apex:outputField value="{!c.Phone}"/>
+			<apex:outputField value="{!c.Birthdate}"/>
+		</apex:repeat>
+	</apex:outputPanel>
+	<apex:form>
+		<apex:sectionHeader title="{!$ObjectType.Account.label}" subtitle="{!$ObjectType.Contact.labelPlural}" />
+		<!-- Accessed with no AccountId -->
+		<apex:pageBlock title="Select an {!$ObjectType.Account.label}" rendered="{!Account.Id = null}">
+			<apex:pageBlockButtons location="bottom">
+				<apex:commandButton action="{!next}" value="Next"/>
+				<apex:commandButton action="{!cancel}" value="Cancel"/>
+				<apex:commandButton action="{!simulateError}" value="Simulate Error" reRender="pageMessages"/>
+			</apex:pageBlockButtons>
+			<apex:pageMessages id="pageMessages" escape="false"/>
+			<apex:pageBlockSection>
+				<apex:inputField value="{!dummyContact.AccountId}"/>
+			</apex:pageBlockSection>
+		</apex:pageBlock>
+		<!-- Accessed with an AccountId -->
+		<apex:pageBlock title="{!$ObjectType.Account.label} Actions" rendered="{!Account.Id != null}">
+			<apex:pageBlockButtons location="top">
+				<apex:commandButton action="{!save}" value="Save"/>
+				<apex:commandButton action="{!cancel}" value="Cancel"/>
+				<apex:commandButton action="{!simulateError}" value="Simulate Error" reRender="pageMessages"/>
+			</apex:pageBlockButtons>
+			<apex:pageMessages id="pageMessages" escape="false"/>
+			<apex:pageBlockSection title="{!$ObjectType.Account.label}" columns="1">
+				<apex:outputField value="{!Account.Id}"/>
+				<apex:outputField value="{!Account.Name}"/>
+			</apex:pageBlockSection>
+			<apex:pageBlockSection title="{!$ObjectType.Contact.labelPlural}" columns="1">
+				<apex:pageBlockTable value="{!contacts}" var="c" styleClass="item-table" rowClasses="item-odd,item-even">
+					<apex:column styleClass="item-cb-column" headerClass="item-cb-column">
+						<apex:facet name="header">
+							<input type="checkbox" onchange="toggleCheckboxes(this, 'item-cb')"/>
+						</apex:facet>
+						<apex:inputCheckbox value="{!c.selected}" styleClass="item-cb"/>
+					</apex:column>
+					<apex:column headerValue="{!$ObjectType.Contact.fields.Name.label}">
+						<apex:outputLink value="/{!c.record.Id}">
+							<apex:outputField value="{!c.record.Name}"/>
+						</apex:outputLink>
+					</apex:column>
+					<apex:column headerValue="{!$ObjectType.Contact.fields.Email.label}">
+						<apex:inputField value="{!c.record.Email}"/>
+					</apex:column>
+					<apex:column headerValue="{!$ObjectType.Contact.fields.Phone.label}">
+						<apex:inputField value="{!c.record.Phone}"/>
+					</apex:column>
+					<apex:column headerValue="{!$ObjectType.Contact.fields.Birthdate.label}">
+						<apex:inputField value="{!c.record.Birthdate}"/>
+					</apex:column>
+				</apex:pageBlockTable>
+			</apex:pageBlockSection>
+		</apex:pageBlock>
+	</apex:form>
+</apex:page>
